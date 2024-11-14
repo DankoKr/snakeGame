@@ -1,4 +1,3 @@
-// import { Game } from './game';
+import { initializeGame } from './game';
 
-// const game = new Game();
-// game.start();
+initializeGame();

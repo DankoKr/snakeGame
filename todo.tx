@@ -1,0 +1,14 @@
+TODO (MUST):
+- fix left and right direction bug (kills the snake) 
+- add style  
+- add pop-up when game paused   
+- add start menu  
+- option to restart the game 
+- do not be allowed to pause when game finished
+- Jest Tests
+- add home page
+
+Should add:
+- add images
+- add music (background and when food is eaten)
+- add dificulty level 
