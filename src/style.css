@@ -1,0 +1,18 @@
+#game-board {
+  border: 2px solid #333;
+  background-color: #f0f0f0;
+}
+
+.snake {
+  fill: green;
+  stroke: #333;
+}
+
+.food {
+  stroke: #333;
+}
+
+#score {
+  font-size: 20px;
+  margin-top: 10px;
+}
