@@ -5,7 +5,9 @@ export type GameState = {
   score: number;
   isPaused: boolean;
   isFinished: boolean;
-  speed: number;
+  currentSpeed: number;
+  originalSpeed: number;
+  controlsReversed: boolean;
 };
 
 export type Position = {

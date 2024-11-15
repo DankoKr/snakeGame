@@ -2,11 +2,8 @@ TODO (MUST):
 - add style    
 - Jest Tests
 
-Should add:
-- add start menu  
-- multiple foods
-- add speed on snake for given points
+Should add: 
 - add images
 - add music (background and when food is eaten)
 - add dificulty level 
-- make it responsive
+- make it responsive (the snake part)

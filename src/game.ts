@@ -25,7 +25,9 @@ const gameState: GameState = {
   score: 0,
   isFinished: false,
   isPaused: false,
-  speed: 200,
+  originalSpeed: 200,
+  currentSpeed: 200,
+  controlsReversed: false,
 };
 
 // Let instead of const so we can restart the game without rebuilding it
@@ -46,13 +48,38 @@ function initializeControls(): void {
       }
     }
 
-    const newDirection = event.code as Direction;
-    if (['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(newDirection)) {
+    const newDirection = getDirection(event.code);
+    if (
+      newDirection &&
+      ['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(newDirection)
+    ) {
       if (!isOppositeDirection(newDirection, gameState.direction)) {
         gameState.direction = newDirection;
       }
     }
   });
+}
+
+function getDirection(keyCode: string): Direction | null {
+  const normalMapping: { [key: string]: Direction } = {
+    KeyW: 'KeyW', // Up
+    KeyS: 'KeyS', // Down
+    KeyA: 'KeyA', // Left
+    KeyD: 'KeyD', // Right
+  };
+
+  const reversedMapping: { [key: string]: Direction } = {
+    KeyW: 'KeyS', // Up key moves down
+    KeyS: 'KeyW', // Down key moves up
+    KeyA: 'KeyD', // Left key moves right
+    KeyD: 'KeyA', // Right key moves left
+  };
+
+  if (gameState.controlsReversed) {
+    return reversedMapping[keyCode] || null;
+  } else {
+    return normalMapping[keyCode] || null;
+  }
 }
 
 function isOppositeDirection(dir1: Direction, dir2: Direction): boolean {
@@ -138,8 +165,23 @@ function gameLoop(): void {
 
   if (food.isEaten(head)) {
     snake.grow();
+    const eatenFoodType = food.getType(head);
     gameState.score += food.getValue(head);
     food.removeFoodAt(head);
+
+    // Apply side effects based on the food type
+    if (eatenFoodType === 'mushroom') {
+      gameState.controlsReversed = true;
+      setTimeout(() => {
+        gameState.controlsReversed = false;
+      }, 3000);
+    } else if (eatenFoodType === 'pizza') {
+      gameState.originalSpeed = gameState.currentSpeed;
+      gameState.currentSpeed = Math.max(50, gameState.currentSpeed - 100); // don't go below 50ms
+      setTimeout(() => {
+        gameState.currentSpeed = gameState.originalSpeed;
+      }, 3000);
+    }
 
     while (food.getCurrentFood().length < 3) {
       food.spawnRandomFood();
@@ -157,7 +199,7 @@ function gameLoop(): void {
   updateBoard();
   updateScore();
 
-  setTimeout(() => requestAnimationFrame(gameLoop), gameState.speed);
+  setTimeout(() => requestAnimationFrame(gameLoop), gameState.currentSpeed);
 }
 
 function checkWallCollision(head: Position): boolean {
@@ -183,7 +225,9 @@ export function restartGame(): void {
   gameState.score = 0;
   gameState.isFinished = false;
   gameState.isPaused = false;
-  gameState.speed = 200;
+  gameState.originalSpeed = 200;
+  gameState.currentSpeed = 200;
+  gameState.controlsReversed = false;
   snake = new Snake([...initialSnakePosition]);
   food = new Food([...initialFoods]);
 
