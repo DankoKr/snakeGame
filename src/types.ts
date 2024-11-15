@@ -4,6 +4,7 @@ export type GameState = {
   food: FoodItem[];
   score: number;
   isPaused: boolean;
+  isFinished: boolean;
   speed: number;
 };
 

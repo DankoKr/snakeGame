@@ -3,8 +3,8 @@ import { Food } from './food';
 import { GameState, Direction, Position, FoodItem } from './types';
 import * as d3 from 'd3';
 
-const BOARD_WIDTH: number = 30;
-const BOARD_HEIGHT: number = 20;
+export const BOARD_WIDTH: number = 30;
+export const BOARD_HEIGHT: number = 20;
 const CELL_SIZE: number = 20;
 
 // Initial positions
@@ -23,6 +23,7 @@ const gameState: GameState = {
   direction: 'KeyD',
   food: [initialFood],
   score: 0,
+  isFinished: false,
   isPaused: false,
   speed: 200,
 };
@@ -39,11 +40,11 @@ function initializeControls(): void {
     if (event.code === 'Space') {
       gameState.isPaused = !gameState.isPaused;
 
-      if (pauseIndicator) {
+      if (pauseIndicator && !gameState.isFinished) {
         pauseIndicator.style.display = gameState.isPaused ? 'block' : 'none';
       }
 
-      if (!gameState.isPaused) {
+      if (!gameState.isPaused && !gameState.isFinished) {
         requestAnimationFrame(gameLoop);
       }
     }
@@ -121,8 +122,14 @@ function checkWallCollision(head: Position): boolean {
 }
 
 function gameOver(): void {
-  gameState.isPaused = true;
+  gameState.isFinished = true;
   alert('Game Over! Your score was: ' + gameState.score);
+}
+
+export function restartGame(): void {
+  if (gameState.isFinished) {
+    initializeGame();
+  }
 }
 
 export function initializeGame(): void {

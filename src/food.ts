@@ -1,4 +1,5 @@
 import { FoodItem, Position } from './types';
+import { BOARD_WIDTH, BOARD_HEIGHT } from './game';
 
 export class Food {
   private currentFood: FoodItem;
@@ -9,8 +10,8 @@ export class Food {
 
   spawn(): void {
     this.currentFood.position = {
-      x: Math.floor(Math.random() * 30),
-      y: Math.floor(Math.random() * 20),
+      x: Math.floor(Math.random() * BOARD_WIDTH),
+      y: Math.floor(Math.random() * BOARD_HEIGHT),
     };
   }
 

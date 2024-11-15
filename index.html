@@ -3,16 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Snake Game</title>
-    <link rel="stylesheet" href="./src/style.css" />
+    <title>Snake Game Homepage</title>
+    <link rel="stylesheet" href="./src/static/css/home.css" />
   </head>
   <body>
-    <h1>Snake Game</h1>
-    <div id="game-container">
-      <svg id="game-board" width="600" height="400"></svg>
-      <p id="score">Score: 0</p>
-      <p id="pause-indicator" style="display: none">Game Paused</p>
+    <div class="container">
+      <h1>Welcome to the Snake Game!</h1>
+      <p>Press the button below to start playing.</p>
+      <button id="start-game-btn">Start Game</button>
     </div>
-    <script type="module" src="./src/main.ts"></script>
+    <script type="module" src="./src/home.ts"></script>
   </body>
 </html>
