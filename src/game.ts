@@ -19,7 +19,7 @@ const initialFood: FoodItem = {
 };
 
 const gameState: GameState = {
-  snake: initialSnakePosition,
+  snake: [...initialSnakePosition],
   direction: 'KeyD',
   food: [initialFood],
   score: 0,
@@ -28,8 +28,9 @@ const gameState: GameState = {
   speed: 200,
 };
 
-const snake = new Snake(initialSnakePosition);
-const food = new Food(initialFood);
+// Let instead of const so we can restart the game without rebuilding it
+let snake = new Snake([...initialSnakePosition]);
+let food = new Food({ ...initialFood });
 
 const svg = d3.select('#game-board');
 const scoreDisplay = d3.select('#score');
@@ -57,6 +58,8 @@ function initializeControls(): void {
 }
 
 function updateBoard(): void {
+  svg.selectAll('*').remove();
+
   const snakeElements = svg
     .selectAll<SVGRectElement, Position>('rect.snake')
     .data(gameState.snake);
@@ -123,13 +126,30 @@ function checkWallCollision(head: Position): boolean {
 
 function gameOver(): void {
   gameState.isFinished = true;
-  alert('Game Over! Your score was: ' + gameState.score);
+  const gameOverModal = document.getElementById('game-over-modal')!;
+  const scoreDisplay = document.getElementById('final-score')!;
+  scoreDisplay.textContent = gameState.score.toString();
+  gameOverModal.style.display = 'block';
 }
 
 export function restartGame(): void {
-  if (gameState.isFinished) {
-    initializeGame();
-  }
+  const gameOverModal = document.getElementById('game-over-modal')!;
+  gameOverModal.style.display = 'none';
+  gameState.snake = [...initialSnakePosition];
+  gameState.direction = 'KeyD';
+  gameState.food = [initialFood];
+  gameState.score = 0;
+  gameState.isFinished = false;
+  gameState.isPaused = false;
+  gameState.speed = 200;
+  snake = new Snake([...initialSnakePosition]);
+  food = new Food({ ...initialFood });
+
+  updateBoard();
+  updateScore();
+
+  // Restart the game loop
+  requestAnimationFrame(gameLoop);
 }
 
 export function initializeGame(): void {
