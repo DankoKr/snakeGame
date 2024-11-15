@@ -1,10 +1,9 @@
-TODO (MUST):
-- add style    
+TODO (MUST):  
 - Jest Tests
 
 Should add: 
+- display rules
 - add images
 - add music (background and when food is eaten)
 - add dificulty level 
 - make it responsive (the snake part)
-- animations
