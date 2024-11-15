@@ -28,6 +28,7 @@ const gameState: GameState = {
   originalSpeed: 200,
   currentSpeed: 200,
   controlsReversed: false,
+  highScore: 0,
 };
 
 // Let instead of const so we can restart the game without rebuilding it
@@ -36,6 +37,7 @@ let food = new Food([...initialFoods]);
 
 const svg = d3.select('#game-board');
 const scoreDisplay = d3.select('#score');
+const highScoreDisplay = d3.select('#high-score');
 const pauseIndicator = document.getElementById('pause-indicator');
 
 function initializeControls(): void {
@@ -149,6 +151,7 @@ function getFoodColor(type: string): string {
 
 function updateScore(): void {
   scoreDisplay.text(`Score: ${gameState.score}`);
+  highScoreDisplay.text(`High Score: ${gameState.highScore}`);
 }
 
 function togglePauseIndicator(): void {
@@ -210,6 +213,10 @@ function checkWallCollision(head: Position): boolean {
 
 function gameOver(): void {
   gameState.isFinished = true;
+  if (gameState.score > gameState.highScore) {
+    gameState.highScore = gameState.score;
+  }
+
   const gameOverModal = document.getElementById('game-over-modal')!;
   const scoreDisplay = document.getElementById('final-score')!;
   scoreDisplay.textContent = gameState.score.toString();

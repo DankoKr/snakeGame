@@ -8,6 +8,7 @@ export type GameState = {
   currentSpeed: number;
   originalSpeed: number;
   controlsReversed: boolean;
+  highScore: number;
 };
 
 export type Position = {
