@@ -1,11 +1,13 @@
 TODO (MUST):
-- fix left and right direction bug (kills the snake) 
+- make it responsive
 - add style    
-- add start menu  
-- option to restart the game 
 - Jest Tests
+- add different food
 
 Should add:
+- add start menu  
+- multiple foods
+- add speed on snake for given points
 - add images
 - add music (background and when food is eaten)
 - add dificulty level 

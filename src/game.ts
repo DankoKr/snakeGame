@@ -52,9 +52,20 @@ function initializeControls(): void {
 
     const newDirection = event.code as Direction;
     if (['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(newDirection)) {
-      gameState.direction = newDirection;
+      if (!isOppositeDirection(newDirection, gameState.direction)) {
+        gameState.direction = newDirection;
+      }
     }
   });
+}
+
+function isOppositeDirection(dir1: Direction, dir2: Direction): boolean {
+  return (
+    (dir1 === 'KeyW' && dir2 === 'KeyS') ||
+    (dir1 === 'KeyS' && dir2 === 'KeyW') ||
+    (dir1 === 'KeyA' && dir2 === 'KeyD') ||
+    (dir1 === 'KeyD' && dir2 === 'KeyA')
+  );
 }
 
 function updateBoard(): void {
