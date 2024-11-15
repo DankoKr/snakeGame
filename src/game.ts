@@ -7,21 +7,21 @@ export const BOARD_WIDTH: number = 30;
 export const BOARD_HEIGHT: number = 20;
 const CELL_SIZE: number = 20;
 
-// Initial positions
 const initialSnakePosition: Position[] = [
   { x: 5, y: 5 },
   { x: 4, y: 5 },
   { x: 3, y: 5 },
 ];
-const initialFood: FoodItem = {
-  position: { x: 10, y: 10 },
-  type: 'cherry',
-};
+
+const initialFoods: FoodItem[] = [
+  { position: { x: 10, y: 10 }, type: 'cherry' },
+  { position: { x: 15, y: 15 }, type: 'mushroom' },
+];
 
 const gameState: GameState = {
   snake: [...initialSnakePosition],
   direction: 'KeyD',
-  food: [initialFood],
+  food: initialFoods,
   score: 0,
   isFinished: false,
   isPaused: false,
@@ -30,7 +30,7 @@ const gameState: GameState = {
 
 // Let instead of const so we can restart the game without rebuilding it
 let snake = new Snake([...initialSnakePosition]);
-let food = new Food({ ...initialFood });
+let food = new Food([...initialFoods]);
 
 const svg = d3.select('#game-board');
 const scoreDisplay = d3.select('#score');
@@ -40,11 +40,7 @@ function initializeControls(): void {
   document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
       gameState.isPaused = !gameState.isPaused;
-
-      if (pauseIndicator && !gameState.isFinished) {
-        pauseIndicator.style.display = gameState.isPaused ? 'block' : 'none';
-      }
-
+      togglePauseIndicator();
       if (!gameState.isPaused && !gameState.isFinished) {
         requestAnimationFrame(gameLoop);
       }
@@ -71,6 +67,11 @@ function isOppositeDirection(dir1: Direction, dir2: Direction): boolean {
 function updateBoard(): void {
   svg.selectAll('*').remove();
 
+  renderSnake();
+  renderFood();
+}
+
+function renderSnake(): void {
   const snakeElements = svg
     .selectAll<SVGRectElement, Position>('rect.snake')
     .data(gameState.snake);
@@ -87,22 +88,46 @@ function updateBoard(): void {
     .style('fill', 'green');
 
   snakeElements.exit().remove();
+}
 
-  const foodPosition = food['currentFood'].position;
-  svg
-    .selectAll('rect.food')
-    .data([foodPosition])
-    .join('rect')
-    .attr('class', 'food')
-    .attr('x', (d) => d.x * CELL_SIZE)
-    .attr('y', (d) => d.y * CELL_SIZE)
-    .attr('width', CELL_SIZE)
-    .attr('height', CELL_SIZE)
-    .style('fill', 'red');
+function renderFood(): void {
+  food.getCurrentFood().forEach((foodItem) => {
+    svg
+      .selectAll(`rect.food-${foodItem.type}`)
+      .data([foodItem.position])
+      .join('rect')
+      .attr('class', `food food-${foodItem.type}`)
+      .attr('x', (d) => d.x * CELL_SIZE)
+      .attr('y', (d) => d.y * CELL_SIZE)
+      .attr('width', CELL_SIZE)
+      .attr('height', CELL_SIZE)
+      .style('fill', getFoodColor(foodItem.type));
+  });
+}
+
+function getFoodColor(type: string): string {
+  switch (type) {
+    case 'cherry':
+      return 'red';
+    case 'mushroom':
+      return 'brown';
+    case 'pizza':
+      return 'yellow';
+    case 'rotten tomatoe':
+      return 'black';
+    default:
+      return 'white';
+  }
 }
 
 function updateScore(): void {
   scoreDisplay.text(`Score: ${gameState.score}`);
+}
+
+function togglePauseIndicator(): void {
+  if (pauseIndicator) {
+    pauseIndicator.style.display = gameState.isPaused ? 'block' : 'none';
+  }
 }
 
 function gameLoop(): void {
@@ -113,8 +138,14 @@ function gameLoop(): void {
 
   if (food.isEaten(head)) {
     snake.grow();
-    gameState.score += food.getValue();
-    food.spawn();
+    gameState.score += food.getValue(head);
+    food.removeFoodAt(head);
+
+    while (food.getCurrentFood().length < 3) {
+      food.spawnRandomFood();
+    }
+
+    updateBoard();
   }
 
   if (checkWallCollision(head) || snake.checkCollision()) {
@@ -148,13 +179,13 @@ export function restartGame(): void {
   gameOverModal.style.display = 'none';
   gameState.snake = [...initialSnakePosition];
   gameState.direction = 'KeyD';
-  gameState.food = [initialFood];
+  gameState.food = [...initialFoods];
   gameState.score = 0;
   gameState.isFinished = false;
   gameState.isPaused = false;
   gameState.speed = 200;
   snake = new Snake([...initialSnakePosition]);
-  food = new Food({ ...initialFood });
+  food = new Food([...initialFoods]);
 
   updateBoard();
   updateScore();
