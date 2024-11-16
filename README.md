@@ -24,6 +24,7 @@ We have different types of food:
 - cherries 🍒 - value: 100 points
 - mushrooms 🍄 - value: 350 points side effect: controls are inverted for 30 seconds (up <-> down, left <-> right)
 - pizza 🍕 - value: 400 points. Side effect: make the snake move faster (to burn off the calories)
+- rotten tomato 🍅 - side effect: peanlty of 150 points (User can have negative score)
 
 Every time the snake eats, a new food item will spawn on an available spot within the plane.
 

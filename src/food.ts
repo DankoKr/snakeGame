@@ -13,7 +13,7 @@ export class Food {
       'cherry',
       'mushroom',
       'pizza',
-      'rotten tomatoe',
+      'rotten tomato',
     ];
     const randomIndex = Math.floor(Math.random() * foodTypes.length);
     const randomFoodType = foodTypes[randomIndex];
@@ -73,8 +73,8 @@ export class Food {
         return 350;
       case 'pizza':
         return 400;
-      case 'rotten tomatoe':
-        return -250;
+      case 'rotten tomato':
+        return -150;
       default:
         return 0;
     }

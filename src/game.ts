@@ -1,6 +1,10 @@
 import { GameState } from './gameState';
 import { Position, FoodItem } from './types';
 import * as d3 from 'd3';
+import cherryIcon from './static/icons/cherry.svg';
+import mushroomIcon from './static/icons/mushroom.svg';
+import pizzaIcon from './static/icons/pizza.svg';
+import rottenTomatoIcon from './static/icons/rotten-tomato.svg';
 
 export const BOARD_WIDTH: number = 30;
 export const BOARD_HEIGHT: number = 20;
@@ -154,31 +158,33 @@ function renderFood(): void {
     .getFood()
     .getCurrentFood()
     .forEach((foodItem) => {
+      const foodIconPath = getFoodIconPath(foodItem.type);
+
       svg
-        .selectAll(`rect.food-${foodItem.type}`)
+        .selectAll(`image.food-${foodItem.type}`)
         .data([foodItem.position])
-        .join('rect')
+        .join('image')
         .attr('class', `food food-${foodItem.type}`)
         .attr('x', (d) => d.x * CELL_SIZE)
         .attr('y', (d) => d.y * CELL_SIZE)
         .attr('width', CELL_SIZE)
         .attr('height', CELL_SIZE)
-        .style('fill', getFoodColor(foodItem.type));
+        .attr('href', foodIconPath);
     });
 }
 
-function getFoodColor(type: string): string {
+function getFoodIconPath(type: string): string {
   switch (type) {
     case 'cherry':
-      return 'red';
+      return cherryIcon;
     case 'mushroom':
-      return 'brown';
+      return mushroomIcon;
     case 'pizza':
-      return 'yellow';
-    case 'rotten tomatoe':
-      return 'black';
+      return pizzaIcon;
+    case 'rotten tomato':
+      return rottenTomatoIcon;
     default:
-      return 'white';
+      return '';
   }
 }
 
