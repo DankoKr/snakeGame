@@ -1,16 +1,3 @@
-export type GameState = {
-  snake: Position[];
-  direction: Direction;
-  food: FoodItem[];
-  score: number;
-  isPaused: boolean;
-  isFinished: boolean;
-  currentSpeed: number;
-  originalSpeed: number;
-  controlsReversed: boolean;
-  highScore: number;
-};
-
 export type Position = {
   x: number;
   y: number;

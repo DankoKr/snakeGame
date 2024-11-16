@@ -6,8 +6,8 @@ body {
   margin: 0;
   font-family: 'Press Start 2P', sans-serif;
   background-color: #0d0d0d;
-  color: #00ff7f;
-  text-shadow: 2px 2px 8px #00ff7f;
+  color: #00e6e6;
+  text-shadow: 2px 2px 8px #00e6e6;
   overflow: hidden;
 }
 
@@ -16,7 +16,7 @@ body {
   background-color: rgba(0, 0, 0, 0.8);
   padding: 40px;
   border-radius: 15px;
-  box-shadow: 0 12px 25px rgba(0, 255, 127, 0.5);
+  box-shadow: 0 12px 25px rgba(255, 26, 117);
   max-width: 400px;
   width: 90%;
 }
@@ -35,20 +35,20 @@ p {
 button {
   padding: 15px 25px;
   font-size: 1.2rem;
-  border: 2px solid #00ff7f;
+  border: 2px solid #00e6e6;
   background-color: #111;
-  color: #00ff7f;
+  color: #00e6e6;
   cursor: pointer;
   text-transform: uppercase;
   border-radius: 8px;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 15px rgba(0, 255, 127, 0.3);
+  box-shadow: 0 6px 15px rgba(255, 26, 117);
 }
 
 button:hover {
-  background-color: #00ff7f;
+  background-color: #00e6e6;
   color: #111;
-  box-shadow: 0 8px 20px rgba(0, 255, 127, 0.5);
+  box-shadow: 0 8px 20px rgba(255, 26, 117);
 }
 
 button:active {
