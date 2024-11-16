@@ -9,20 +9,16 @@ export class Snake {
 
   move(direction: Direction): void {
     const head = { ...this.getHead() };
-    switch (direction) {
-      case 'KeyW':
-        head.y -= 1;
-        break;
-      case 'KeyS':
-        head.y += 1;
-        break;
-      case 'KeyA':
-        head.x -= 1;
-        break;
-      case 'KeyD':
-        head.x += 1;
-        break;
-    }
+
+    const moves: Record<Direction, () => void> = {
+      KeyW: () => (head.y -= 1),
+      KeyS: () => (head.y += 1),
+      KeyA: () => (head.x -= 1),
+      KeyD: () => (head.x += 1),
+    };
+
+    moves[direction]?.();
+
     this.body.unshift(head);
     this.body.pop();
   }

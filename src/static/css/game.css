@@ -79,7 +79,9 @@ body {
   text-transform: uppercase;
 }
 
-.modal-content button {
+.modal-content button,
+.modal-content a {
+  display: inline-block;
   margin: 15px;
   padding: 12px 30px;
   font-size: 1rem;
@@ -89,10 +91,16 @@ body {
   color: #00e6e6;
   text-transform: uppercase;
   border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  line-height: 1.5;
   transition: all 0.3s ease;
+  box-sizing: border-box;
+  height: 50px;
 }
 
-.modal-content button:hover {
+.modal-content button:hover,
+.modal-content a:hover {
   background-color: #00e6e6;
   color: #111;
 }
