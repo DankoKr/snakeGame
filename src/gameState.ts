@@ -9,8 +9,7 @@ export class GameState {
   private score: number;
   private isPaused: boolean;
   private isFinished: boolean;
-  private currentSpeed: number;
-  private originalSpeed: number;
+  private snakeSpeed: number;
   private controlsReversed: boolean;
   private highScore: number;
 
@@ -26,8 +25,7 @@ export class GameState {
     this.score = 0;
     this.isPaused = false;
     this.isFinished = false;
-    this.currentSpeed = initialSpeed;
-    this.originalSpeed = initialSpeed;
+    this.snakeSpeed = initialSpeed;
     this.controlsReversed = false;
     this.highScore = 0;
   }
@@ -84,7 +82,7 @@ export class GameState {
   }
 
   getSpeed(): number {
-    return this.currentSpeed;
+    return this.snakeSpeed;
   }
 
   getFood(): Food {
@@ -121,14 +119,9 @@ export class GameState {
           this.controlsReversed = false;
         }, 30000);
       } else if (eatenFoodType === 'pizza') {
-        this.originalSpeed = this.currentSpeed;
-        this.currentSpeed = Math.max(50, this.currentSpeed - 100); // don't go below 50ms
-        setTimeout(() => {
-          this.currentSpeed = this.originalSpeed;
-        }, 3000);
+        this.snakeSpeed = Math.max(50, this.snakeSpeed - 100); // don't go below 50ms
       }
 
-      // Ensure there are at least 3 food items
       while (this.food.getCurrentFood().length < 3) {
         this.food.spawnRandomFood();
       }
@@ -162,8 +155,7 @@ export class GameState {
     this.score = 0;
     this.isFinished = false;
     this.isPaused = false;
-    this.originalSpeed = initialSpeed;
-    this.currentSpeed = initialSpeed;
+    this.snakeSpeed = initialSpeed;
     this.controlsReversed = false;
   }
 }
