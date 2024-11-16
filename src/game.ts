@@ -10,9 +10,15 @@ export const BOARD_WIDTH: number = 30;
 export const BOARD_HEIGHT: number = 20;
 const CELL_SIZE: number = 20;
 
-let gameOverAudio: HTMLAudioElement | null = null;
-let backgroundMusic: HTMLAudioElement | null = null;
+const GAME_OVER_AUDIO: HTMLAudioElement = new Audio(
+  './src/static/music/death.mp3'
+);
+const BACKGROUND_MUSIC: HTMLAudioElement = new Audio(
+  './src/static/music/gameplay.mp3'
+);
 const eatFoodMusic: HTMLAudioElement = new Audio('./src/static/music/eat.mp3');
+BACKGROUND_MUSIC.volume = 0.4;
+BACKGROUND_MUSIC.loop = true;
 let hasInteracted: boolean = false;
 
 const initialSnakePosition: Position[] = [
@@ -35,25 +41,10 @@ const pauseIndicator = document.getElementById('pause-indicator');
 const gameOverModal = document.getElementById('game-over-modal')!;
 const finalScoreDisplay = document.getElementById('final-score')!;
 
-function initializeAudio(): void {
-  if (!gameOverAudio) {
-    gameOverAudio = new Audio('./src/static/music/death.mp3');
-  }
-  if (!backgroundMusic) {
-    backgroundMusic = new Audio('./src/static/music/gameplay.mp3');
-    backgroundMusic.volume = 0.4;
-    backgroundMusic.loop = true;
-  }
-}
-
 function startAudio(): void {
-  if (!backgroundMusic) {
-    initializeAudio();
-  }
-
-  if (backgroundMusic && backgroundMusic.paused) {
+  if (BACKGROUND_MUSIC && BACKGROUND_MUSIC.paused) {
     try {
-      backgroundMusic.play().catch((error) => {
+      BACKGROUND_MUSIC.play().catch((error) => {
         console.log('Background music playback failed:', error);
       });
     } catch (error) {
@@ -63,20 +54,16 @@ function startAudio(): void {
 }
 
 function stopAudio(): void {
-  if (backgroundMusic) {
-    backgroundMusic.pause();
-    backgroundMusic.currentTime = 0;
+  if (BACKGROUND_MUSIC) {
+    BACKGROUND_MUSIC.pause();
+    BACKGROUND_MUSIC.currentTime = 0;
   }
 }
 
 function playGameOverSound(): void {
-  if (!gameOverAudio) {
-    initializeAudio();
-  }
-
-  if (gameOverAudio) {
+  if (GAME_OVER_AUDIO) {
     try {
-      gameOverAudio.play().catch((error) => {
+      GAME_OVER_AUDIO.play().catch((error) => {
         console.log('Game over sound playback failed:', error);
       });
     } catch (error) {
@@ -86,40 +73,47 @@ function playGameOverSound(): void {
 }
 
 function initializeControls(): void {
-  document.addEventListener('keydown', (event) => {
-    // Check if this is first interaction
-    if (
-      !hasInteracted &&
-      (event.code === 'Space' ||
-        ['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(event.code))
-    ) {
-      initializeAudio();
+  document.addEventListener('keydown', handleKeyPress);
+}
+
+function handleKeyPress(event: KeyboardEvent): void {
+  handleFirstInteraction(event);
+  handlePauseToggle(event);
+  handlePlayerMovement(event);
+}
+
+function handleFirstInteraction(event: KeyboardEvent): void {
+  if (!hasInteracted && (event.code === 'Space' || isMovementKey(event.code))) {
+    startAudio();
+    hasInteracted = true;
+  }
+}
+
+function handlePauseToggle(event: KeyboardEvent): void {
+  if (event.code === 'Space' && !gameState.isGameFinished()) {
+    gameState.togglePause();
+    togglePauseIndicator();
+
+    if (gameState.isGamePaused()) {
+      stopAudio();
+    } else {
       startAudio();
-      hasInteracted = true;
-    }
-
-    if (event.code === 'Space' && !gameState.isGameFinished()) {
-      gameState.togglePause();
-      togglePauseIndicator();
-
-      if (gameState.isGamePaused()) {
-        stopAudio();
-      } else {
-        startAudio();
-        if (!gameState.isGameFinished()) {
-          requestAnimationFrame(gameLoop);
-        }
+      if (!gameState.isGameFinished()) {
+        requestAnimationFrame(gameLoop);
       }
     }
+  }
+}
 
-    const newDirection = gameState.getDirection(event.code);
-    if (
-      newDirection &&
-      ['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(newDirection)
-    ) {
-      gameState.updateDirection(newDirection);
-    }
-  });
+function handlePlayerMovement(event: KeyboardEvent): void {
+  const newDirection = gameState.getDirection(event.code);
+  if (newDirection && isMovementKey(newDirection)) {
+    gameState.updateDirection(newDirection);
+  }
+}
+
+function isMovementKey(key: string): boolean {
+  return ['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(key);
 }
 
 function togglePauseIndicator(): void {
@@ -174,18 +168,14 @@ function renderFood(): void {
 }
 
 function getFoodIconPath(type: string): string {
-  switch (type) {
-    case 'cherry':
-      return cherryIcon;
-    case 'mushroom':
-      return mushroomIcon;
-    case 'pizza':
-      return pizzaIcon;
-    case 'rotten tomato':
-      return rottenTomatoIcon;
-    default:
-      return '';
-  }
+  const foodIcons: Record<string, string> = {
+    cherry: cherryIcon,
+    mushroom: mushroomIcon,
+    pizza: pizzaIcon,
+    'rotten tomato': rottenTomatoIcon,
+  };
+
+  return foodIcons[type] ?? '';
 }
 
 function updateScore(): void {
@@ -212,7 +202,11 @@ function gameLoop(): void {
   }
 
   // Make sure music is playing during gameplay
-  if (backgroundMusic && backgroundMusic.paused && !gameState.isGamePaused()) {
+  if (
+    BACKGROUND_MUSIC &&
+    BACKGROUND_MUSIC.paused &&
+    !gameState.isGamePaused()
+  ) {
     startAudio();
   }
 

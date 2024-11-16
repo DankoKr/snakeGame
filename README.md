@@ -58,9 +58,17 @@ The **game ends** once the snake collides with itself or the border of the plane
  npm run dev
 ```
 
+## Playable Devices
+
+The game is compatible with all devices except mobile, as it relies on keyboard controls and is not optimized for smaller screen sizes.
+
 ## Acknowledgements
 
 - [D3.js](https://d3js.org/) - Data-Driven Documents library for SVG rendering.
 - [TypeScript](https://www.typescriptlang.org/) - Typed JavaScript at Any Scale.
 
 Enjoy playing the game! 🐍🎮
+
+## Issues
+
+Currently the music is played after the user presses a button instead of as soon as the game starts.

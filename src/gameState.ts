@@ -50,23 +50,11 @@ export class GameState {
   }
 
   getDirection(keyCode: string): Direction | null {
-    const normalMapping: { [key: string]: Direction } = {
-      KeyW: 'KeyW', // Up
-      KeyS: 'KeyS', // Down
-      KeyA: 'KeyA', // Left
-      KeyD: 'KeyD', // Right
-    };
+    const mapping: { [key: string]: Direction } = this.controlsReversed
+      ? { KeyW: 'KeyS', KeyS: 'KeyW', KeyA: 'KeyD', KeyD: 'KeyA' }
+      : { KeyW: 'KeyW', KeyS: 'KeyS', KeyA: 'KeyA', KeyD: 'KeyD' };
 
-    const reversedMapping: { [key: string]: Direction } = {
-      KeyW: 'KeyS', // Up key moves down
-      KeyS: 'KeyW', // Down key moves up
-      KeyA: 'KeyD', // Left key moves right
-      KeyD: 'KeyA', // Right key moves left
-    };
-
-    return this.controlsReversed
-      ? reversedMapping[keyCode] || null
-      : normalMapping[keyCode] || null;
+    return mapping[keyCode] || null;
   }
 
   getSnakeBody(): Position[] {

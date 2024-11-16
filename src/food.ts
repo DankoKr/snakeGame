@@ -65,18 +65,14 @@ export class Food {
   }
 
   getValue(position: Position): number {
+    const foodValues: Record<FoodType, number> = {
+      cherry: 100,
+      mushroom: 350,
+      pizza: 400,
+      'rotten tomato': -150,
+    };
+
     const foodType = this.getType(position);
-    switch (foodType) {
-      case 'cherry':
-        return 100;
-      case 'mushroom':
-        return 350;
-      case 'pizza':
-        return 400;
-      case 'rotten tomato':
-        return -150;
-      default:
-        return 0;
-    }
+    return foodValues[foodType] ?? 0;
   }
 }
