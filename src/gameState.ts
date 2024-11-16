@@ -104,13 +104,21 @@ export class GameState {
     return this.snake.checkCollision();
   }
 
-  handleFoodConsumption(): void {
+  handleFoodConsumption(eatFoodMusic: HTMLAudioElement): void {
     const head = this.snake.getHead();
     if (this.food.isEaten(head)) {
       this.snake.grow();
       const eatenFoodType = this.food.getType(head);
       this.score += this.food.getValue(head);
       this.food.removeFoodAt(head);
+
+      // Play the eat food sound effect
+      if (eatFoodMusic) {
+        eatFoodMusic.currentTime = 0;
+        eatFoodMusic.play().catch((err) => {
+          console.error('Failed to play eatFoodMusic:', err);
+        });
+      }
 
       // Apply side effects based on the food type
       if (eatenFoodType === 'mushroom') {

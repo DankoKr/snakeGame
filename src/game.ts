@@ -6,6 +6,11 @@ export const BOARD_WIDTH: number = 30;
 export const BOARD_HEIGHT: number = 20;
 const CELL_SIZE: number = 20;
 
+let gameOverAudio: HTMLAudioElement | null = null;
+let backgroundMusic: HTMLAudioElement | null = null;
+const eatFoodMusic: HTMLAudioElement = new Audio('./src/static/music/eat.mp3');
+let hasInteracted: boolean = false;
+
 const initialSnakePosition: Position[] = [
   { x: 5, y: 5 },
   { x: 4, y: 5 },
@@ -26,13 +31,80 @@ const pauseIndicator = document.getElementById('pause-indicator');
 const gameOverModal = document.getElementById('game-over-modal')!;
 const finalScoreDisplay = document.getElementById('final-score')!;
 
+function initializeAudio(): void {
+  if (!gameOverAudio) {
+    gameOverAudio = new Audio('./src/static/music/death.mp3');
+  }
+  if (!backgroundMusic) {
+    backgroundMusic = new Audio('./src/static/music/gameplay.mp3');
+    backgroundMusic.volume = 0.4;
+    backgroundMusic.loop = true;
+  }
+}
+
+function startAudio(): void {
+  if (!backgroundMusic) {
+    initializeAudio();
+  }
+
+  if (backgroundMusic && backgroundMusic.paused) {
+    try {
+      backgroundMusic.play().catch((error) => {
+        console.log('Background music playback failed:', error);
+      });
+    } catch (error) {
+      console.log('Background music playback failed:', error);
+    }
+  }
+}
+
+function stopAudio(): void {
+  if (backgroundMusic) {
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+  }
+}
+
+function playGameOverSound(): void {
+  if (!gameOverAudio) {
+    initializeAudio();
+  }
+
+  if (gameOverAudio) {
+    try {
+      gameOverAudio.play().catch((error) => {
+        console.log('Game over sound playback failed:', error);
+      });
+    } catch (error) {
+      console.log('Game over sound playback failed:', error);
+    }
+  }
+}
+
 function initializeControls(): void {
   document.addEventListener('keydown', (event) => {
+    // Check if this is first interaction
+    if (
+      !hasInteracted &&
+      (event.code === 'Space' ||
+        ['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(event.code))
+    ) {
+      initializeAudio();
+      startAudio();
+      hasInteracted = true;
+    }
+
     if (event.code === 'Space' && !gameState.isGameFinished()) {
       gameState.togglePause();
       togglePauseIndicator();
-      if (!gameState.isGamePaused() && !gameState.isGameFinished()) {
-        requestAnimationFrame(gameLoop);
+
+      if (gameState.isGamePaused()) {
+        stopAudio();
+      } else {
+        startAudio();
+        if (!gameState.isGameFinished()) {
+          requestAnimationFrame(gameLoop);
+        }
       }
     }
 
@@ -119,16 +191,23 @@ function gameLoop(): void {
   if (gameState.isGamePaused() || gameState.isGameFinished()) return;
 
   gameState.moveSnake();
-  gameState.handleFoodConsumption();
+  gameState.handleFoodConsumption(eatFoodMusic);
 
   if (
     gameState.checkWallCollision(BOARD_WIDTH, BOARD_HEIGHT) ||
     gameState.checkSelfCollision()
   ) {
     gameState.gameOver();
+    stopAudio();
+    playGameOverSound();
     finalScoreDisplay.textContent = gameState.getScore().toString();
     gameOverModal.style.display = 'block';
     return;
+  }
+
+  // Make sure music is playing during gameplay
+  if (backgroundMusic && backgroundMusic.paused && !gameState.isGamePaused()) {
+    startAudio();
   }
 
   updateBoard();
@@ -144,7 +223,10 @@ export function restartGame(): void {
   updateBoard();
   updateScore();
 
-  // Restart the game loop
+  if (hasInteracted) {
+    startAudio();
+  }
+
   requestAnimationFrame(gameLoop);
 }
 
