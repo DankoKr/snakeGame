@@ -10,229 +10,268 @@ export const BOARD_WIDTH: number = 30;
 export const BOARD_HEIGHT: number = 20;
 const CELL_SIZE: number = 20;
 
-const GAME_OVER_AUDIO: HTMLAudioElement = new Audio(
-  './src/static/music/death.mp3'
-);
-const BACKGROUND_MUSIC: HTMLAudioElement = new Audio(
-  './src/static/music/gameplay.mp3'
-);
-const eatFoodMusic: HTMLAudioElement = new Audio('./src/static/music/eat.mp3');
-BACKGROUND_MUSIC.volume = 0.4;
-BACKGROUND_MUSIC.loop = true;
-let hasInteracted: boolean = false;
+export class Game {
+  private gameState: GameState;
+  private svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
+  private scoreDisplay: d3.Selection<HTMLElement, unknown, HTMLElement, any>;
+  private highScoreDisplay: d3.Selection<
+    HTMLElement,
+    unknown,
+    HTMLElement,
+    any
+  >;
+  private pauseIndicator: HTMLElement | null;
+  private gameOverModal: HTMLElement;
+  private finalScoreDisplay: HTMLElement;
+  private hasInteracted: boolean = false;
+  private initialSnakePosition: Position[];
+  private initialFoods: FoodItem[];
+  private GAME_OVER_AUDIO: HTMLAudioElement;
+  private BACKGROUND_MUSIC: HTMLAudioElement;
+  private eatFoodMusic: HTMLAudioElement;
 
-const initialSnakePosition: Position[] = [
-  { x: 5, y: 5 },
-  { x: 4, y: 5 },
-  { x: 3, y: 5 },
-];
+  constructor() {
+    this.GAME_OVER_AUDIO = new Audio('./src/static/music/death.mp3');
+    this.BACKGROUND_MUSIC = new Audio('./src/static/music/gameplay.mp3');
+    this.eatFoodMusic = new Audio('./src/static/music/eat.mp3');
+    this.BACKGROUND_MUSIC.volume = 0.4;
+    this.BACKGROUND_MUSIC.loop = true;
 
-const initialFoods: FoodItem[] = [
-  { position: { x: 10, y: 10 }, type: 'cherry' },
-  { position: { x: 15, y: 15 }, type: 'mushroom' },
-];
+    this.initialSnakePosition = [
+      { x: 5, y: 5 },
+      { x: 4, y: 5 },
+      { x: 3, y: 5 },
+    ];
 
-const gameState = new GameState(initialSnakePosition, initialFoods);
+    this.initialFoods = [
+      { position: { x: 10, y: 10 }, type: 'cherry' },
+      { position: { x: 15, y: 15 }, type: 'mushroom' },
+    ];
 
-const svg = d3.select('#game-board');
-const scoreDisplay = d3.select('#score');
-const highScoreDisplay = d3.select('#high-score');
-const pauseIndicator = document.getElementById('pause-indicator');
-const gameOverModal = document.getElementById('game-over-modal')!;
-const finalScoreDisplay = document.getElementById('final-score')!;
+    this.gameState = new GameState(
+      this.initialSnakePosition,
+      this.initialFoods
+    );
 
-function startAudio(): void {
-  if (BACKGROUND_MUSIC && BACKGROUND_MUSIC.paused) {
-    try {
-      BACKGROUND_MUSIC.play().catch((error) => {
+    this.svg = d3.select('#game-board');
+    this.scoreDisplay = d3.select('#score');
+    this.highScoreDisplay = d3.select('#high-score');
+    this.pauseIndicator = document.getElementById('pause-indicator');
+    this.gameOverModal = document.getElementById('game-over-modal')!;
+    this.finalScoreDisplay = document.getElementById('final-score')!;
+
+    this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.gameLoop = this.gameLoop.bind(this);
+
+    // Initialize game
+    this.initializeControls();
+    this.updateBoard();
+    this.updateScore();
+    requestAnimationFrame(this.gameLoop);
+  }
+
+  private startAudio(): void {
+    if (this.BACKGROUND_MUSIC && this.BACKGROUND_MUSIC.paused) {
+      try {
+        this.BACKGROUND_MUSIC.play().catch((error) => {
+          console.log('Background music playback failed:', error);
+        });
+      } catch (error) {
         console.log('Background music playback failed:', error);
-      });
-    } catch (error) {
-      console.log('Background music playback failed:', error);
-    }
-  }
-}
-
-function stopAudio(): void {
-  if (BACKGROUND_MUSIC) {
-    BACKGROUND_MUSIC.pause();
-    BACKGROUND_MUSIC.currentTime = 0;
-  }
-}
-
-function playGameOverSound(): void {
-  if (GAME_OVER_AUDIO) {
-    try {
-      GAME_OVER_AUDIO.play().catch((error) => {
-        console.log('Game over sound playback failed:', error);
-      });
-    } catch (error) {
-      console.log('Game over sound playback failed:', error);
-    }
-  }
-}
-
-function initializeControls(): void {
-  document.addEventListener('keydown', handleKeyPress);
-}
-
-function handleKeyPress(event: KeyboardEvent): void {
-  handleFirstInteraction(event);
-  handlePauseToggle(event);
-  handlePlayerMovement(event);
-}
-
-function handleFirstInteraction(event: KeyboardEvent): void {
-  if (!hasInteracted && (event.code === 'Space' || isMovementKey(event.code))) {
-    startAudio();
-    hasInteracted = true;
-  }
-}
-
-function handlePauseToggle(event: KeyboardEvent): void {
-  if (event.code === 'Space' && !gameState.isGameFinished()) {
-    gameState.togglePause();
-    togglePauseIndicator();
-
-    if (gameState.isGamePaused()) {
-      stopAudio();
-    } else {
-      startAudio();
-      if (!gameState.isGameFinished()) {
-        requestAnimationFrame(gameLoop);
       }
     }
   }
-}
 
-function handlePlayerMovement(event: KeyboardEvent): void {
-  const newDirection = gameState.getDirection(event.code);
-  if (newDirection && isMovementKey(newDirection)) {
-    gameState.updateDirection(newDirection);
-  }
-}
-
-function isMovementKey(key: string): boolean {
-  return ['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(key);
-}
-
-function togglePauseIndicator(): void {
-  if (pauseIndicator) {
-    pauseIndicator.style.display = gameState.isGamePaused() ? 'block' : 'none';
-  }
-}
-
-function updateBoard(): void {
-  svg.selectAll('*').remove();
-  renderSnake();
-  renderFood();
-}
-
-function renderSnake(): void {
-  const snakeElements = svg
-    .selectAll<SVGRectElement, Position>('rect.snake')
-    .data(gameState.getSnakeBody());
-
-  snakeElements
-    .enter()
-    .append('rect')
-    .attr('class', 'snake')
-    .merge(snakeElements)
-    .attr('x', (d) => d.x * CELL_SIZE)
-    .attr('y', (d) => d.y * CELL_SIZE)
-    .attr('width', CELL_SIZE)
-    .attr('height', CELL_SIZE)
-    .style('fill', 'green');
-
-  snakeElements.exit().remove();
-}
-
-function renderFood(): void {
-  gameState
-    .getFood()
-    .getCurrentFood()
-    .forEach((foodItem) => {
-      const foodIconPath = getFoodIconPath(foodItem.type);
-
-      svg
-        .selectAll(`image.food-${foodItem.type}`)
-        .data([foodItem.position])
-        .join('image')
-        .attr('class', `food food-${foodItem.type}`)
-        .attr('x', (d) => d.x * CELL_SIZE)
-        .attr('y', (d) => d.y * CELL_SIZE)
-        .attr('width', CELL_SIZE)
-        .attr('height', CELL_SIZE)
-        .attr('href', foodIconPath);
-    });
-}
-
-function getFoodIconPath(type: string): string {
-  const foodIcons: Record<string, string> = {
-    cherry: cherryIcon,
-    mushroom: mushroomIcon,
-    pizza: pizzaIcon,
-    'rotten tomato': rottenTomatoIcon,
-  };
-
-  return foodIcons[type] ?? '';
-}
-
-function updateScore(): void {
-  scoreDisplay.text(`Score: ${gameState.getScore()}`);
-  highScoreDisplay.text(`High Score: ${gameState.getHighScore()}`);
-}
-
-function gameLoop(): void {
-  if (gameState.isGamePaused() || gameState.isGameFinished()) return;
-
-  gameState.moveSnake();
-  gameState.handleFoodConsumption(eatFoodMusic);
-
-  if (
-    gameState.checkWallCollision(BOARD_WIDTH, BOARD_HEIGHT) ||
-    gameState.checkSelfCollision()
-  ) {
-    gameState.gameOver();
-    stopAudio();
-    playGameOverSound();
-    finalScoreDisplay.textContent = gameState.getScore().toString();
-    gameOverModal.style.display = 'block';
-    return;
+  private stopAudio(): void {
+    if (this.BACKGROUND_MUSIC) {
+      this.BACKGROUND_MUSIC.pause();
+      this.BACKGROUND_MUSIC.currentTime = 0;
+    }
   }
 
-  // Make sure music is playing during gameplay
-  if (
-    BACKGROUND_MUSIC &&
-    BACKGROUND_MUSIC.paused &&
-    !gameState.isGamePaused()
-  ) {
-    startAudio();
+  private playGameOverSound(): void {
+    if (this.GAME_OVER_AUDIO) {
+      try {
+        this.GAME_OVER_AUDIO.play().catch((error) => {
+          console.log('Game over sound playback failed:', error);
+        });
+      } catch (error) {
+        console.log('Game over sound playback failed:', error);
+      }
+    }
   }
 
-  updateBoard();
-  updateScore();
-
-  setTimeout(() => requestAnimationFrame(gameLoop), gameState.getSpeed());
-}
-
-export function restartGame(): void {
-  gameOverModal.style.display = 'none';
-  gameState.reset(initialSnakePosition, initialFoods);
-
-  updateBoard();
-  updateScore();
-
-  if (hasInteracted) {
-    startAudio();
+  private initializeControls(): void {
+    document.addEventListener('keydown', this.handleKeyPress);
   }
 
-  requestAnimationFrame(gameLoop);
-}
+  private handleKeyPress(event: KeyboardEvent): void {
+    this.handleFirstInteraction(event);
+    this.handlePauseToggle(event);
+    this.handlePlayerMovement(event);
+  }
 
-export function initializeGame(): void {
-  initializeControls();
-  updateBoard();
-  updateScore();
-  requestAnimationFrame(gameLoop);
+  private handleFirstInteraction(event: KeyboardEvent): void {
+    if (
+      !this.hasInteracted &&
+      (event.code === 'Space' || this.isMovementKey(event.code))
+    ) {
+      this.startAudio();
+      this.hasInteracted = true;
+    }
+  }
+
+  private handlePauseToggle(event: KeyboardEvent): void {
+    if (event.code === 'Space' && !this.gameState.isGameFinished()) {
+      this.gameState.togglePause();
+      this.togglePauseIndicator();
+
+      if (this.gameState.isGamePaused()) {
+        this.stopAudio();
+      } else {
+        this.startAudio();
+        if (!this.gameState.isGameFinished()) {
+          requestAnimationFrame(this.gameLoop);
+        }
+      }
+    }
+  }
+
+  private handlePlayerMovement(event: KeyboardEvent): void {
+    const newDirection = this.gameState.getDirection(event.code);
+    if (newDirection && this.isMovementKey(newDirection)) {
+      this.gameState.updateDirection(newDirection);
+    }
+  }
+
+  private isMovementKey(key: string): boolean {
+    return ['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(key);
+  }
+
+  private togglePauseIndicator(): void {
+    if (this.pauseIndicator) {
+      this.pauseIndicator.style.display = this.gameState.isGamePaused()
+        ? 'block'
+        : 'none';
+    }
+  }
+
+  private updateBoard(): void {
+    this.svg.selectAll('*').remove();
+    this.renderSnake();
+    this.renderFood();
+  }
+
+  private renderSnake(): void {
+    const snakeElements = this.svg
+      .selectAll<SVGRectElement, Position>('rect.snake')
+      .data(this.gameState.getSnakeBody());
+
+    snakeElements
+      .enter()
+      .append('rect')
+      .attr('class', 'snake')
+      .merge(snakeElements)
+      .attr('x', (d) => d.x * CELL_SIZE)
+      .attr('y', (d) => d.y * CELL_SIZE)
+      .attr('width', CELL_SIZE)
+      .attr('height', CELL_SIZE)
+      .style('fill', 'green');
+
+    snakeElements.exit().remove();
+  }
+
+  private renderFood(): void {
+    this.gameState
+      .getFood()
+      .getCurrentFood()
+      .forEach((foodItem) => {
+        const foodIconPath = this.getFoodIconPath(foodItem.type);
+
+        this.svg
+          .selectAll(`image.food-${foodItem.type}`)
+          .data([foodItem.position])
+          .join('image')
+          .attr('class', `food food-${foodItem.type}`)
+          .attr('x', (d) => d.x * CELL_SIZE)
+          .attr('y', (d) => d.y * CELL_SIZE)
+          .attr('width', CELL_SIZE)
+          .attr('height', CELL_SIZE)
+          .attr('href', foodIconPath);
+      });
+  }
+
+  private getFoodIconPath(type: string): string {
+    const foodIcons: Record<string, string> = {
+      cherry: cherryIcon,
+      mushroom: mushroomIcon,
+      pizza: pizzaIcon,
+      'rotten tomato': rottenTomatoIcon,
+    };
+
+    return foodIcons[type] ?? '';
+  }
+
+  private updateScore(): void {
+    this.scoreDisplay.text(`Score: ${this.gameState.getScore()}`);
+    this.highScoreDisplay.text(`High Score: ${this.gameState.getHighScore()}`);
+  }
+
+  private gameLoop(): void {
+    if (this.gameState.isGamePaused() || this.gameState.isGameFinished())
+      return;
+
+    this.gameState.moveSnake();
+    this.gameState.handleFoodConsumption(this.eatFoodMusic);
+
+    if (
+      this.gameState.checkWallCollision(BOARD_WIDTH, BOARD_HEIGHT) ||
+      this.gameState.checkSelfCollision()
+    ) {
+      this.gameState.gameOver();
+      this.stopAudio();
+      this.playGameOverSound();
+      this.finalScoreDisplay.textContent = this.gameState.getScore().toString();
+      this.gameOverModal.style.display = 'block';
+      return;
+    }
+
+    // Ensure music is playing during gameplay
+    if (
+      this.BACKGROUND_MUSIC &&
+      this.BACKGROUND_MUSIC.paused &&
+      !this.gameState.isGamePaused()
+    ) {
+      this.startAudio();
+    }
+
+    this.updateBoard();
+    this.updateScore();
+
+    setTimeout(
+      () => requestAnimationFrame(this.gameLoop),
+      this.gameState.getSpeed()
+    );
+  }
+
+  public restartGame(): void {
+    this.gameOverModal.style.display = 'none';
+    this.gameState.reset(this.initialSnakePosition, this.initialFoods);
+
+    this.updateBoard();
+    this.updateScore();
+
+    if (this.hasInteracted) {
+      this.startAudio();
+    }
+
+    requestAnimationFrame(this.gameLoop);
+  }
+
+  public initializeGame(): void {
+    this.initializeControls();
+    this.updateBoard();
+    this.updateScore();
+    requestAnimationFrame(this.gameLoop);
+  }
 }

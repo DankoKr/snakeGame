@@ -1,5 +1,7 @@
-import { restartGame, initializeGame } from './game';
+import { Game } from './game';
 
-document.getElementById('restart-btn')?.addEventListener('click', restartGame);
+const game = new Game();
 
-initializeGame();
+document
+  .getElementById('restart-btn')
+  ?.addEventListener('click', () => game.restartGame());
