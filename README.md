@@ -58,6 +58,12 @@ The **game ends** once the snake collides with itself or the border of the plane
  npm run dev
 ```
 
+## Run Jest tests
+
+```bash
+ npx jest
+```
+
 ## Playable Devices
 
 The game is compatible with all devices except mobile, as it relies on keyboard controls and is not optimized for smaller screen sizes.
@@ -72,3 +78,7 @@ Enjoy playing the game! 🐍🎮
 ## Issues
 
 Currently the music is played after the user presses a button instead of as soon as the game starts.
+
+## Credits
+
+I utilized ChatGPT for the Jest tests because I lack prior experience with Jest tests involving SVG formats and mocking audio.

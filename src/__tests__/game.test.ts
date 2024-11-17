@@ -1,8 +1,5 @@
-// __tests__/game.test.ts
-
 import { Game } from '../game';
 
-// Mocking d3 library
 jest.mock('d3', () => ({
   select: jest.fn().mockImplementation(() => {
     let textContent = '';
@@ -30,7 +27,6 @@ jest.mock('d3', () => ({
   }),
 }));
 
-// Mocking the Audio object
 Object.defineProperty(global, 'Audio', {
   value: jest.fn().mockImplementation(() => {
     let isPaused = true;
@@ -67,7 +63,7 @@ describe('Game Class', () => {
     `;
 
     game = new Game();
-    game['BACKGROUND_MUSIC'] = new Audio(); // Ensure BACKGROUND_MUSIC is initialized
+    game['BACKGROUND_MUSIC'] = new Audio();
     mockEvent = new KeyboardEvent('keydown', { code: 'KeyW' });
   });
 
@@ -92,7 +88,6 @@ describe('Game Class', () => {
     mockEvent = new KeyboardEvent('keydown', { code: 'Space' });
     const togglePauseSpy = jest.spyOn(game['gameState'], 'togglePause');
 
-    // Mock isGamePaused to reflect state change after togglePause
     let isPaused = false;
     jest
       .spyOn(game['gameState'], 'isGamePaused')
@@ -164,7 +159,6 @@ describe('Game Class', () => {
   });
 
   test('should render snake on updateBoard', () => {
-    // Simply spy on selectAll without re-mocking
     const selectAllSpy = jest.spyOn(game['svg'], 'selectAll');
 
     game['updateBoard']();
