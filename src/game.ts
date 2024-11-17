@@ -254,7 +254,7 @@ export class Game {
     );
   }
 
-  public restartGame(): void {
+  restartGame(): void {
     this.gameOverModal.style.display = 'none';
     this.gameState.reset(this.initialSnakePosition, this.initialFoods);
 
@@ -268,7 +268,7 @@ export class Game {
     requestAnimationFrame(this.gameLoop);
   }
 
-  public initializeGame(): void {
+  initializeGame(): void {
     this.initializeControls();
     this.updateBoard();
     this.updateScore();
