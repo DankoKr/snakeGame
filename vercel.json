@@ -1,8 +1,0 @@
-{
-    "routes": [
-      { "src": "^/game.html$", "dest": "/game.html" },
-      { "src": "^/index.html$", "dest": "/index.html" },
-      { "src": "^/$", "dest": "/index.html" }
-    ]
-  }
-  
