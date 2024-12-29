@@ -31,9 +31,9 @@ export class Game {
   private eatFoodMusic: HTMLAudioElement;
 
   constructor() {
-    this.GAME_OVER_AUDIO = new Audio('./src/static/music/death.mp3');
-    this.BACKGROUND_MUSIC = new Audio('./src/static/music/gameplay.mp3');
-    this.eatFoodMusic = new Audio('./src/static/music/eat.mp3');
+    this.GAME_OVER_AUDIO = new Audio('/static/music/death.mp3');
+    this.BACKGROUND_MUSIC = new Audio('/static/music/gameplay.mp3');
+    this.eatFoodMusic = new Audio('/static/music/eat.mp3');
     this.BACKGROUND_MUSIC.volume = 0.4;
     this.BACKGROUND_MUSIC.loop = true;
 
